@@ -47,4 +47,6 @@ Inspired by *Pick Me Up*'s Synthesis Altar where low-tier gear, monster cores, a
 ---
 
 ## AI Coding Conventions for This Repo
-1. **1.21.1 Data Components Only:** Never use `ItemStack#
+1. **1.21.1 Data Components Only:** Never use `ItemStack#getTag()` or `getOrCreateTag()`. Always define strongly typed `DataComponentType` records with `Codec` and `StreamCodec`.
+2. **Server-Authoritative Minigames:** The client renders the forging minigame bar, but hit timing and final `ItemGrade` calculation must be validated on the server via `CustomPacketPayload`.
+3. **Data Generation (`runData`):** Generate blockstates, item models, loot tables, tags, and custom forging/synthesis recipes via NeoForge `DataGenerator` rather than hand-writing JSONs.
