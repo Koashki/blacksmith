@@ -1,0 +1,23 @@
+# Gradle & IDE
+.gradle/
+build/
+run/
+out/
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+
+# Logs & OS
+logs/
+*.log
+.DS_Store
+Thumbs.db
+
+# Datagen Hash Cache
+src/generated/resources/.cache/

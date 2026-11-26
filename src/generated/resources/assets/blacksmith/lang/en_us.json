@@ -1,0 +1,23 @@
+{
+  "block.blacksmith.blast_forge": "Blast Forge",
+  "block.blacksmith.forging_anvil": "Forging Anvil",
+  "block.blacksmith.synthesis_chamber": "Synthesis Chamber",
+  "grade.blacksmith.epic": "Epic",
+  "grade.blacksmith.legendary": "Legendary",
+  "grade.blacksmith.mythic": "Mythic",
+  "grade.blacksmith.normal": "Normal",
+  "grade.blacksmith.rare": "Rare",
+  "grade.blacksmith.unique": "Unique",
+  "item.blacksmith.aspect_essence": "Aspect Essence",
+  "item.blacksmith.forged_dagger": "Forged Dagger",
+  "item.blacksmith.forged_greatsword": "Forged Greatsword",
+  "item.blacksmith.forged_spear": "Forged Spear",
+  "item.blacksmith.forged_sword": "Forged Sword",
+  "item.blacksmith.forged_war_hammer": "Forged War Hammer",
+  "item.blacksmith.gold_forging_hammer": "Gold Forging Hammer",
+  "item.blacksmith.iron_forging_hammer": "Iron Forging Hammer",
+  "item.blacksmith.molten_alloy": "Molten Alloy Billet",
+  "item.blacksmith.refining_dust": "Refining Dust",
+  "item.blacksmith.stone_forging_hammer": "Stone Forging Hammer",
+  "itemGroup.blacksmith": "Blacksmith"
+}
