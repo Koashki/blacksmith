@@ -3,6 +3,11 @@ name: Build & Verify
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+      - '.github/workflows/pr-autofill.yml'
   pull_request:
     branches: [ main ]
 
@@ -17,23 +22,50 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check if code or build files changed
+        id: filter
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+            CHANGED=$(git diff --name-only "$BASE_REF"...HEAD)
+          else
+            CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "src/")
+          fi
+
+          # Ignore docs, markdown, .gitignore, PR template, and PR autofill workflow
+          CODE_CHANGES=$(echo "$CHANGED" | grep -Ev '(^|/)\.gitignore$|\.md$|^\.github/PULL_REQUEST_TEMPLATE\.md$|^\.github/workflows/pr-autofill\.yml$' || true)
+
+          if [ -z "$CODE_CHANGES" ]; then
+            echo "run_build=false" >> "$GITHUB_OUTPUT"
+            echo "Only non-code files changed; skipping Gradle build."
+          else
+            echo "run_build=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up JDK 21 (Temurin)
+        if: steps.filter.outputs.run_build == 'true'
         uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
 
       - name: Make gradlew executable
+        if: steps.filter.outputs.run_build == 'true'
         run: chmod +x ./gradlew
 
       - name: Setup Gradle
+        if: steps.filter.outputs.run_build == 'true'
         uses: gradle/actions/setup-gradle@v6
 
       - name: Build mod jar
+        if: steps.filter.outputs.run_build == 'true'
         run: ./gradlew build
 
       - name: Upload mod artifact
+        if: steps.filter.outputs.run_build == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: blacksmith-mod-jar
