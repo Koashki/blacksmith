@@ -144,6 +144,21 @@ public class BlastForgeBlockEntity extends BlockEntity implements MenuProvider {
         setChanged();
     }
 
+    public void ventHeat(ServerPlayer player) {
+        if (bellowsCooldown > 0 || level == null || temperatureC <= ForgingHeatData.AMBIENT_TEMP_C) {
+            return;
+        }
+        temperatureC = Math.max(ForgingHeatData.AMBIENT_TEMP_C, temperatureC - 80.0f);
+        bellowsCooldown = 15;
+        if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE,
+                    worldPosition.getX() + 0.5, worldPosition.getY() + 1.05, worldPosition.getZ() + 0.5,
+                    12, 0.25, 0.15, 0.25, 0.04);
+        }
+        level.playSound(null, worldPosition, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.55f, 1.2f);
+        setChanged();
+    }
+
     public boolean pourMoltenAlloy(ServerPlayer player) {
         if (level == null || temperatureC < 600.0f) {
             return false;
