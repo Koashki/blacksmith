@@ -23,7 +23,7 @@ public class ForgingAnvilMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
 
     public ForgingAnvilMenu(int containerId, Inventory playerInv, FriendlyByteBuf extraData) {
-        this(containerId, playerInv, extraData.readBlockPos(), new ItemStackHandler(ForgingAnvilBlockEntity.TOTAL_SLOTS), new SimpleContainerData(11));
+        this(containerId, playerInv, extraData.readBlockPos(), new ItemStackHandler(ForgingAnvilBlockEntity.TOTAL_SLOTS), new SimpleContainerData(12));
     }
 
     public ForgingAnvilMenu(int containerId, Inventory playerInv, ForgingAnvilBlockEntity be) {
@@ -75,8 +75,12 @@ public class ForgingAnvilMenu extends AbstractContainerMenu {
         return Math.max(1, data.get(4));
     }
 
-    public float cursorPos() {
-        return data.get(5) / 1000.0f;
+    public int stepElapsedTicks() {
+        return data.get(5);
+    }
+
+    public int cursorPeriodTicks() {
+        return Math.max(1, data.get(11));
     }
 
     public float targetCenter() {

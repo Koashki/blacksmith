@@ -80,12 +80,13 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
                 case 2 -> selectedArchetype.ordinal();
                 case 3 -> currentStep;
                 case 4 -> totalSteps;
-                case 5 -> Math.round(computeCursorPosition() * 1000.0f);
+                case 5 -> stepElapsedTicks();
                 case 6 -> Math.round(targetCenter * 1000.0f);
                 case 7 -> Math.round(targetWidth * 1000.0f);
                 case 8 -> Math.round(previewFinalScore());
                 case 9 -> expectedStrikeKind().ordinal();
                 case 10 -> lastHitQuality;
+                case 11 -> cursorPeriodTicks;
                 default -> 0;
             };
         }
@@ -97,7 +98,7 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
 
         @Override
         public int getCount() {
-            return 11;
+            return 12;
         }
     };
 
@@ -117,13 +118,23 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
         // Session cursor advances deterministically using level.getGameTime()
     }
 
+    public int stepElapsedTicks() {
+        if (!sessionActive || level == null) {
+            return 0;
+        }
+        return (int) Math.max(0L, level.getGameTime() - stepStartTick);
+    }
+
+    public float computeCursorPositionAt(double elapsedTicks) {
+        double phase = (Math.max(0.0, elapsedTicks) % cursorPeriodTicks) / (double) cursorPeriodTicks;
+        return (float) (0.5 + 0.5 * Math.sin(phase * Math.PI * 2.0));
+    }
+
     public float computeCursorPosition() {
         if (!sessionActive || level == null) {
             return 0.5f;
         }
-        long elapsed = Math.max(0L, level.getGameTime() - stepStartTick);
-        double phase = (elapsed % cursorPeriodTicks) / (double) cursorPeriodTicks;
-        return (float) (0.5 + 0.5 * Math.sin(phase * Math.PI * 2.0));
+        return computeCursorPositionAt(stepElapsedTicks());
     }
 
     public ForgedArchetype.StrikeKind expectedStrikeKind() {
@@ -177,8 +188,15 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
         }
 
         ForgedArchetype.StrikeKind expected = expectedStrikeKind();
-        float cursor = computeCursorPosition();
-        float distance = Math.abs(cursor - targetCenter);
+        int elapsed = stepElapsedTicks();
+        // Evaluate best distance within a ±1.5 tick latency grace window so visually dead-center clicks always feel fair
+        float distance = Float.MAX_VALUE;
+        for (double offset = -1.5; offset <= 1.5; offset += 0.5) {
+            float candidate = Math.abs(computeCursorPositionAt(elapsed + offset) - targetCenter);
+            if (candidate < distance) {
+                distance = candidate;
+            }
+        }
         float perfectHalf = targetWidth * 0.28f;
         float goodHalf = targetWidth * 0.60f;
 

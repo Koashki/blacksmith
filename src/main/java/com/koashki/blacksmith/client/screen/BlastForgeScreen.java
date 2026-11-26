@@ -13,7 +13,7 @@ public class BlastForgeScreen extends AbstractContainerScreen<BlastForgeMenu> {
     public BlastForgeScreen(BlastForgeMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 166;
+        this.imageHeight = 168;
     }
 
     @Override
@@ -21,12 +21,17 @@ public class BlastForgeScreen extends AbstractContainerScreen<BlastForgeMenu> {
         super.init();
         addRenderableWidget(Button.builder(Component.literal("Bellows"), btn ->
                         PacketDistributor.sendToServer(new WorkstationActionPayload(menu.blockPos(), "bellows", 0)))
-                .bounds(leftPos + 54, topPos + 60, 52, 16)
+                .bounds(leftPos + 48, topPos + 57, 44, 15)
+                .build());
+
+        addRenderableWidget(Button.builder(Component.literal("Vent"), btn ->
+                        PacketDistributor.sendToServer(new WorkstationActionPayload(menu.blockPos(), "vent", 0)))
+                .bounds(leftPos + 95, topPos + 57, 34, 15)
                 .build());
 
         addRenderableWidget(Button.builder(Component.literal("Pour"), btn ->
                         PacketDistributor.sendToServer(new WorkstationActionPayload(menu.blockPos(), "pour_alloy", 0)))
-                .bounds(leftPos + 114, topPos + 60, 50, 16)
+                .bounds(leftPos + 132, topPos + 57, 36, 15)
                 .build());
     }
 
@@ -34,11 +39,12 @@ public class BlastForgeScreen extends AbstractContainerScreen<BlastForgeMenu> {
     protected void renderBg(GuiGraphics gui, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
-        // Dark forge panel background
-        gui.fill(x, y, x + imageWidth, y + imageHeight, 0xFF2B2624);
-        gui.renderOutline(x, y, imageWidth, imageHeight, 0xFF5A4E48);
 
-        // Slot frames
+        // Main panel
+        gui.fill(x, y, x + imageWidth, y + imageHeight, 0xFF2B2624);
+        gui.renderOutline(x, y, imageWidth, imageHeight, 0xFF6B5E57);
+
+        // Workstation slots
         drawSlotBox(gui, x + 26, y + 53);
         drawSlotBox(gui, x + 26, y + 21);
         drawSlotBox(gui, x + 62, y + 17);
@@ -47,11 +53,15 @@ public class BlastForgeScreen extends AbstractContainerScreen<BlastForgeMenu> {
         drawSlotBox(gui, x + 82, y + 37);
         drawSlotBox(gui, x + 134, y + 33);
 
+        // Player inventory panel divider + full 36-slot grid
+        gui.fill(x + 6, y + 74, x + imageWidth - 6, y + 75, 0xFF524741);
+        drawPlayerInventorySlots(gui, x + 8, y + 84);
+
         // Temperature thermometer bar (left side)
         int barX = x + 10;
         int barY = y + 18;
         int barW = 8;
-        int barH = 54;
+        int barH = 52;
         gui.fill(barX, barY, barX + barW, barY + barH, 0xFF141212);
 
         // Optimal 850-950°C band highlight
@@ -70,9 +80,21 @@ public class BlastForgeScreen extends AbstractContainerScreen<BlastForgeMenu> {
     protected void renderLabels(GuiGraphics gui, int mouseX, int mouseY) {
         gui.drawString(font, title, 8, 6, 0xFFE6D5C3, false);
         String tempLabel = menu.temperatureC() + "°C";
-        int color = (menu.temperatureC() >= 850 && menu.temperatureC() <= 950) ? 0xFF55FF77 : 0xFFFFAA44;
-        gui.drawString(font, tempLabel, 118, 18, color, false);
-        gui.drawString(font, playerInventoryTitle, 8, 74, 0xFFB8A99A, false);
+        int color = (menu.temperatureC() >= 850 && menu.temperatureC() <= 950) ? 0xFF55FF77
+                : (menu.temperatureC() > 950 ? 0xFFFF5555 : 0xFFFFAA44);
+        gui.drawString(font, tempLabel, 122, 18, color, false);
+        gui.drawString(font, playerInventoryTitle, 8, 75, 0xFFB8A99A, false);
+    }
+
+    private void drawPlayerInventorySlots(GuiGraphics gui, int left, int top) {
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                drawSlotBox(gui, left + col * 18, top + row * 18);
+            }
+        }
+        for (int col = 0; col < 9; col++) {
+            drawSlotBox(gui, left + col * 18, top + 58);
+        }
     }
 
     private void drawSlotBox(GuiGraphics gui, int sx, int sy) {

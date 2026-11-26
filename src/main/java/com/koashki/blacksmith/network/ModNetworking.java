@@ -40,6 +40,7 @@ public final class ModNetworking {
             if (be instanceof BlastForgeBlockEntity forge) {
                 switch (payload.action()) {
                     case "bellows" -> forge.pumpBellows(player);
+                    case "vent" -> forge.ventHeat(player);
                     case "pour_alloy" -> forge.pourMoltenAlloy(player);
                 }
             } else if (be instanceof ForgingAnvilBlockEntity anvil) {
