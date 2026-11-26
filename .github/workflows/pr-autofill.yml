@@ -1,0 +1,74 @@
+name: PR Auto-Fill
+
+on:
+  pull_request:
+    types: [ opened ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  autofill:
+    name: Auto-Fill PR Description
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Populate PR summary and type checkboxes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          node <<'EOF'
+          const { execFileSync } = require('child_process');
+          const fs = require('fs');
+
+          const raw = execFileSync('gh', [
+            'pr', 'view', process.env.PR_NUMBER,
+            '--repo', process.env.REPO,
+            '--json', 'body,title,headRefName,commits'
+          ], { encoding: 'utf8' });
+
+          const pr = JSON.parse(raw);
+          let body = pr.body || '';
+          const placeholder = '<!-- Briefly describe what this PR adds, fixes, or changes. -->';
+
+          const commits = (pr.commits || [])
+            .map(c => c.messageHeadline)
+            .filter(Boolean);
+
+          let changed = false;
+
+          if (body.includes(placeholder) && commits.length > 0) {
+            const summaryLines = commits.map(msg => `- ${msg}`).join('\n');
+            body = body.replace(placeholder, summaryLines);
+            changed = true;
+          }
+
+          const haystack = [pr.title || '', pr.headRefName || '', ...commits].join('\n').toLowerCase();
+          const types = [
+            { key: 'feat', regex: /(^|\s|\/)feat(\(|:|\/)/m },
+            { key: 'fix', regex: /(^|\s|\/)fix(\(|:|\/)/m },
+            { key: 'refactor', regex: /(^|\s|\/)refactor(\(|:|\/)/m },
+            { key: 'docs', regex: /(^|\s|\/)docs(\(|:|\/)/m }
+          ];
+
+          for (const { key, regex } of types) {
+            const unchecked = `- [ ] \`${key}\`:`;
+            const checked = `- [x] \`${key}\`:`;
+            if (regex.test(haystack) && body.includes(unchecked)) {
+              body = body.replace(unchecked, checked);
+              changed = true;
+            }
+          }
+
+          if (changed) {
+            fs.writeFileSync('/tmp/pr_body.md', body, 'utf8');
+            execFileSync('gh', [
+              'pr', 'edit', process.env.PR_NUMBER,
+              '--repo', process.env.REPO,
+              '--body-file', '/tmp/pr_body.md'
+            ], { stdio: 'inherit' });
+          }
+          EOF
