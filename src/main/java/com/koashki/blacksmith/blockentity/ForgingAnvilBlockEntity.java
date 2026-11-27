@@ -52,6 +52,9 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
                 resetSession();
             }
             setChanged();
+            if (level != null && !level.isClientSide) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            }
         }
     };
 
@@ -112,6 +115,14 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
 
     public ContainerData dataAccess() {
         return dataAccess;
+    }
+
+    public ItemStack displayStack() {
+        ItemStack output = inventory.getStackInSlot(SLOT_OUTPUT);
+        if (!output.isEmpty()) {
+            return output;
+        }
+        return inventory.getStackInSlot(SLOT_BILLET);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ForgingAnvilBlockEntity anvil) {
@@ -411,6 +422,19 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
         if (tag.contains("Inventory")) {
             inventory.deserializeNBT(registries, tag.getCompound("Inventory"));
         }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        tag.put("Inventory", inventory.serializeNBT(registries));
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override

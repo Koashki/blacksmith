@@ -1,6 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:item/iron_ingot"
+    "layer0": "blacksmith:item/molten_alloy_base",
+    "layer1": "blacksmith:item/molten_alloy_accent"
   }
 }

@@ -1,9 +1,7 @@
 package com.koashki.blacksmith.datagen;
 
 import com.koashki.blacksmith.core.BlacksmithMod;
-import com.koashki.blacksmith.core.ModItems;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
@@ -14,30 +12,43 @@ public class ModItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        handheldVanilla("stone_forging_hammer", "item/stone_axe");
-        handheldVanilla("iron_forging_hammer", "item/iron_axe");
-        handheldVanilla("gold_forging_hammer", "item/golden_axe");
+        handheldSingle("stone_forging_hammer");
+        handheldSingle("iron_forging_hammer");
+        handheldSingle("gold_forging_hammer");
 
-        generatedVanilla("molten_alloy", "item/iron_ingot");
-        generatedVanilla("refining_dust", "item/glowstone_dust");
-        generatedVanilla("aspect_essence", "item/amethyst_shard");
-        generatedVanilla("smiths_ledger", "item/writable_book");
-        generatedVanilla("torn_forge_note", "item/paper");
+        generatedTwoLayer("molten_alloy");
+        generatedSingle("refining_dust");
+        generatedTwoLayer("aspect_essence");
+        generatedSingle("smiths_ledger");
+        generatedSingle("torn_forge_note");
 
-        handheldVanilla("forged_sword", "item/iron_sword");
-        handheldVanilla("forged_greatsword", "item/iron_sword");
-        handheldVanilla("forged_dagger", "item/iron_sword");
-        handheldVanilla("forged_spear", "item/iron_shovel");
-        handheldVanilla("forged_war_hammer", "item/iron_axe");
+        handheldThreeLayerWeapon("forged_sword");
+        handheldThreeLayerWeapon("forged_greatsword");
+        handheldThreeLayerWeapon("forged_dagger");
+        handheldThreeLayerWeapon("forged_spear");
+        handheldThreeLayerWeapon("forged_war_hammer");
     }
 
-    private void handheldVanilla(String name, String vanillaTexturePath) {
+    private void handheldSingle(String name) {
         withExistingParent(name, mcLoc("item/handheld"))
-                .texture("layer0", ResourceLocation.withDefaultNamespace(vanillaTexturePath));
+                .texture("layer0", modLoc("item/" + name));
     }
 
-    private void generatedVanilla(String name, String vanillaTexturePath) {
+    private void generatedSingle(String name) {
         withExistingParent(name, mcLoc("item/generated"))
-                .texture("layer0", ResourceLocation.withDefaultNamespace(vanillaTexturePath));
+                .texture("layer0", modLoc("item/" + name));
+    }
+
+    private void generatedTwoLayer(String name) {
+        withExistingParent(name, mcLoc("item/generated"))
+                .texture("layer0", modLoc("item/" + name + "_base"))
+                .texture("layer1", modLoc("item/" + name + "_accent"));
+    }
+
+    private void handheldThreeLayerWeapon(String name) {
+        withExistingParent(name, mcLoc("item/handheld"))
+                .texture("layer0", modLoc("item/" + name + "_base"))
+                .texture("layer1", modLoc("item/" + name + "_accent"))
+                .texture("layer2", modLoc("item/" + name + "_handle"));
     }
 }

@@ -2,6 +2,7 @@ package com.koashki.blacksmith.client;
 
 import com.koashki.blacksmith.aspect.AspectRegistryManager;
 import com.koashki.blacksmith.aspect.ItemAspectMapping;
+import com.koashki.blacksmith.client.renderer.ForgingAnvilRenderer;
 import com.koashki.blacksmith.client.screen.BlastForgeScreen;
 import com.koashki.blacksmith.client.screen.ForgingAnvilScreen;
 import com.koashki.blacksmith.client.screen.SmithsLedgerScreen;
@@ -13,6 +14,7 @@ import com.koashki.blacksmith.component.ItemGradeData;
 import com.koashki.blacksmith.component.SynthesisStarData;
 import com.koashki.blacksmith.core.BlacksmithMod;
 import com.koashki.blacksmith.core.ModAttachments;
+import com.koashki.blacksmith.core.ModBlockEntities;
 import com.koashki.blacksmith.core.ModConfigs;
 import com.koashki.blacksmith.core.ModDataComponents;
 import com.koashki.blacksmith.core.ModItems;
@@ -27,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
@@ -51,11 +54,19 @@ public final class BlacksmithClientEvents {
         }
 
         @SubscribeEvent
+        public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerBlockEntityRenderer(ModBlockEntities.FORGING_ANVIL.get(), ForgingAnvilRenderer::new);
+        }
+
+        @SubscribeEvent
         public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
             event.register((stack, tintIndex) -> {
+                if (tintIndex >= 2) {
+                    return 0xFFFFFFFF; // Untinted wooden/leather handle layer
+                }
                 ForgedCompositionData comp = stack.get(ModDataComponents.FORGED_COMPOSITION.get());
                 if (comp == null) {
-                    return 0xFFFFFFFF;
+                    return tintIndex == 0 ? 0xFFD8D8DC : 0xFFFFAA33;
                 }
                 int rgb = tintIndex == 0 ? comp.primaryColor() : comp.accentColor();
                 return 0xFF000000 | (rgb & 0x00FFFFFF);
