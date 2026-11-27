@@ -59,6 +59,14 @@ public final class ModNetworking {
                         anvil.decideOverForge(player, payload.arg() != 0);
                         syncProficiency(player);
                     }
+                    case "lattice_click" -> {
+                        anvil.handleLatticeClick(player, payload.arg());
+                        syncProficiency(player);
+                    }
+                    case "lattice_quench" -> {
+                        anvil.bailOutLattice(player);
+                        syncProficiency(player);
+                    }
                 }
             } else if (be instanceof SynthesisChamberBlockEntity chamber) {
                 switch (payload.action()) {

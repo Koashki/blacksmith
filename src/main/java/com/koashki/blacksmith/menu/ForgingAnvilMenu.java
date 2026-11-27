@@ -23,7 +23,7 @@ public class ForgingAnvilMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
 
     public ForgingAnvilMenu(int containerId, Inventory playerInv, FriendlyByteBuf extraData) {
-        this(containerId, playerInv, extraData.readBlockPos(), new ItemStackHandler(ForgingAnvilBlockEntity.TOTAL_SLOTS), new SimpleContainerData(12));
+        this(containerId, playerInv, extraData.readBlockPos(), new ItemStackHandler(ForgingAnvilBlockEntity.TOTAL_SLOTS), new SimpleContainerData(16));
     }
 
     public ForgingAnvilMenu(int containerId, Inventory playerInv, ForgingAnvilBlockEntity be) {
@@ -102,6 +102,22 @@ public class ForgingAnvilMenu extends AbstractContainerMenu {
 
     public int lastHitQuality() {
         return data.get(10);
+    }
+
+    public boolean isLatticeActive() {
+        return data.get(12) != 0;
+    }
+
+    public int latticeMask() {
+        return data.get(13);
+    }
+
+    public int latticeMovesLeft() {
+        return data.get(14);
+    }
+
+    public int latticeTicksLeft() {
+        return data.get(15);
     }
 
     private void addPlayerInventory(Inventory inv, int left, int top) {
