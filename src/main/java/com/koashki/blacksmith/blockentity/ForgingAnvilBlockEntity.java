@@ -74,6 +74,17 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
     private int overForgeRound = 0;
     private int lastHitQuality = 0; // 0=none, 1=miss, 2=good, 3=perfect
 
+    // Pick Me Up-inspired 3x3 Molten Lattice Over-Forge state
+    private static final int LATTICE_SOLVED_MASK = 0b111111111;
+    private boolean latticeActive = false;
+    private int latticeMask = LATTICE_SOLVED_MASK;
+    private int latticeMovesLeft = 0;
+    private int latticeTicksLeft = 0;
+    private float overForgeScoreDelta = 0.0f;
+    private double overForgeBreakthroughBonus = 0.0;
+    @Nullable
+    private java.util.UUID activeCrafterUuid = null;
+
     private final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int index) {
@@ -90,6 +101,10 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
                 case 9 -> expectedStrikeKind().ordinal();
                 case 10 -> lastHitQuality;
                 case 11 -> cursorPeriodTicks;
+                case 12 -> latticeActive ? 1 : 0;
+                case 13 -> latticeMask;
+                case 14 -> latticeMovesLeft;
+                case 15 -> latticeTicksLeft;
                 default -> 0;
             };
         }
@@ -101,7 +116,7 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
 
         @Override
         public int getCount() {
-            return 12;
+            return 16;
         }
     };
 
@@ -126,7 +141,21 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ForgingAnvilBlockEntity anvil) {
-        // Session cursor advances deterministically using level.getGameTime()
+        if (anvil.latticeActive && level instanceof ServerLevel serverLevel) {
+            if (anvil.latticeTicksLeft > 0) {
+                anvil.latticeTicksLeft--;
+            }
+            if (anvil.latticeTicksLeft <= 0) {
+                ServerPlayer crafter = anvil.activeCrafterUuid != null
+                        ? serverLevel.getServer().getPlayerList().getPlayer(anvil.activeCrafterUuid)
+                        : null;
+                if (crafter != null) {
+                    anvil.finishLattice(crafter);
+                } else {
+                    anvil.resetSession();
+                }
+            }
+        }
     }
 
     public int stepElapsedTicks() {
@@ -180,6 +209,10 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
         this.stabilizationRatio = 0.0f;
         this.overForgeRound = 0;
         this.awaitingOverForge = false;
+        this.latticeActive = false;
+        this.overForgeScoreDelta = 0.0f;
+        this.overForgeBreakthroughBonus = 0.0;
+        this.activeCrafterUuid = player.getUUID();
         this.lastHitQuality = 0;
         this.sessionActive = true;
 
@@ -273,21 +306,108 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
     }
 
     public void decideOverForge(ServerPlayer player, boolean pushFurther) {
-        if (!sessionActive || !awaitingOverForge) {
+        if (!sessionActive || !awaitingOverForge || level == null) {
             return;
         }
         if (!pushFurther) {
             finalizeCreation(player);
             return;
         }
-        ItemStack hammer = inventory.getStackInSlot(SLOT_HAMMER);
-        float bonus = (hammer.getItem() instanceof ForgingHammerItem h) ? h.zoneWidthBonus() : 0.0f;
+
+        // Start Pick Me Up-inspired 3x3 Molten Lattice Over-Forge Puzzle (guaranteed solvable in 3-4 moves)
         overForgeRound = 1;
         awaitingOverForge = false;
-        currentStep = 0;
-        totalSteps = 2;
-        configureStepWindow(bonus);
+        latticeActive = true;
+        activeCrafterUuid = player.getUUID();
+        latticeMask = LATTICE_SOLVED_MASK;
+
+        ItemStack billet = inventory.getStackInSlot(SLOT_BILLET);
+        ForgedCompositionData comp = billet.get(ModDataComponents.FORGED_COMPOSITION.get());
+        int scrambleMoves = (comp != null && comp.instability() >= 0.35f) ? 4 : 3;
+
+        java.util.Set<Integer> used = new java.util.HashSet<>();
+        while (used.size() < scrambleMoves) {
+            int cell = level.getRandom().nextInt(9);
+            if (used.add(cell)) {
+                latticeMask = applyLatticeCrossFlip(latticeMask, cell);
+            }
+        }
+        if (latticeMask == LATTICE_SOLVED_MASK) {
+            latticeMask = applyLatticeCrossFlip(latticeMask, 4);
+        }
+
+        latticeMovesLeft = 6;
+        latticeTicksLeft = 240; // 12 seconds before billet cools
+        if (level instanceof ServerLevel serverLevel) {
+            serverLevel.playSound(null, worldPosition, SoundEvents.BLAZE_SHOOT, SoundSource.BLOCKS, 0.7f, 1.3f);
+        }
         setChanged();
+    }
+
+    public void handleLatticeClick(ServerPlayer player, int cellIndex) {
+        if (!sessionActive || !latticeActive || level == null) {
+            return;
+        }
+        int cell = Math.clamp(cellIndex, 0, 8);
+        latticeMask = applyLatticeCrossFlip(latticeMask, cell);
+        latticeMovesLeft = Math.max(0, latticeMovesLeft - 1);
+
+        int litCount = Integer.bitCount(latticeMask);
+        if (level instanceof ServerLevel serverLevel) {
+            float pitch = 0.8f + (litCount / 9.0f) * 0.7f;
+            serverLevel.playSound(null, worldPosition, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.8f, pitch);
+            serverLevel.sendParticles(ParticleTypes.FLAME,
+                    worldPosition.getX() + 0.5, worldPosition.getY() + 1.05, worldPosition.getZ() + 0.5,
+                    6, 0.2, 0.1, 0.2, 0.03);
+        }
+
+        if (latticeMask == LATTICE_SOLVED_MASK || latticeMovesLeft <= 0) {
+            finishLattice(player);
+        }
+        setChanged();
+    }
+
+    public void bailOutLattice(ServerPlayer player) {
+        if (sessionActive && latticeActive) {
+            finishLattice(player);
+        }
+    }
+
+    private void finishLattice(ServerPlayer player) {
+        int litCount = Integer.bitCount(latticeMask);
+        if (latticeMask == LATTICE_SOLVED_MASK) {
+            overForgeScoreDelta = 14.0f;
+            overForgeBreakthroughBonus = 0.12;
+            stabilizationRatio = 1.0f;
+            if (level instanceof ServerLevel serverLevel) {
+                serverLevel.playSound(null, worldPosition, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.9f, 1.35f);
+                serverLevel.sendParticles(ParticleTypes.END_ROD,
+                        worldPosition.getX() + 0.5, worldPosition.getY() + 1.15, worldPosition.getZ() + 0.5,
+                        18, 0.3, 0.2, 0.3, 0.08);
+            }
+        } else if (litCount >= 7) {
+            overForgeScoreDelta = 2.0f;
+            overForgeBreakthroughBonus = 0.0;
+        } else {
+            overForgeScoreDelta = -10.0f;
+            overForgeBreakthroughBonus = 0.0;
+            if (level instanceof ServerLevel serverLevel) {
+                serverLevel.playSound(null, worldPosition, SoundEvents.ITEM_BREAK, SoundSource.BLOCKS, 0.8f, 0.8f);
+            }
+        }
+        latticeActive = false;
+        finalizeCreation(player);
+    }
+
+    public static int applyLatticeCrossFlip(int mask, int cell) {
+        int row = cell / 3;
+        int col = cell % 3;
+        mask ^= (1 << cell);
+        if (row > 0) mask ^= (1 << ((row - 1) * 3 + col));
+        if (row < 2) mask ^= (1 << ((row + 1) * 3 + col));
+        if (col > 0) mask ^= (1 << (row * 3 + (col - 1)));
+        if (col < 2) mask ^= (1 << (row * 3 + (col + 1)));
+        return mask & LATTICE_SOLVED_MASK;
     }
 
     public void renameMasterpiece(ServerPlayer player, String customName) {
@@ -330,7 +450,7 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
 
     private float previewFinalScore() {
         float avgStrike = strikesCompleted > 0 ? (strikeScoreSum / strikesCompleted) : 0.0f;
-        return GradingEngine.computeFinalScore(heatScore, avgStrike, stabilizationRatio * 4.0f);
+        return GradingEngine.computeFinalScore(heatScore, avgStrike, stabilizationRatio * 4.0f + overForgeScoreDelta);
     }
 
     private void finalizeCreation(ServerPlayer player) {
@@ -347,10 +467,10 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
                 : new ForgedCompositionData(selectedArchetype.id(), net.minecraft.resources.ResourceLocation.withDefaultNamespace("iron_ingot"),
                 List.of(), java.util.Map.of(), 0xD8D8DC, 0xD8D8DC, 0.05f);
 
-        double catalystBonus = 0.0;
+        double catalystBonus = overForgeBreakthroughBonus;
         ItemStack catalyst = inventory.getStackInSlot(SLOT_CATALYST);
         if (!catalyst.isEmpty() && catalyst.getItem() instanceof RefiningDustItem) {
-            catalystBonus = 0.08;
+            catalystBonus += 0.08;
             catalyst.shrink(1);
         }
 
@@ -403,6 +523,13 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
     private void resetSession() {
         sessionActive = false;
         awaitingOverForge = false;
+        latticeActive = false;
+        latticeMask = LATTICE_SOLVED_MASK;
+        latticeMovesLeft = 0;
+        latticeTicksLeft = 0;
+        overForgeScoreDelta = 0.0f;
+        overForgeBreakthroughBonus = 0.0;
+        activeCrafterUuid = null;
         currentStep = 0;
         strikesCompleted = 0;
         strikeScoreSum = 0.0f;
