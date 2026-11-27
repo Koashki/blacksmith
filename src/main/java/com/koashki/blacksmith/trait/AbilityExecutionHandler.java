@@ -21,6 +21,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
@@ -58,6 +59,22 @@ public final class AbilityExecutionHandler {
             return;
         }
         triggerAbilities(level, player, event.getEntity(), player.getMainHandItem(), AspectIds.TRIGGER_ON_KILL);
+    }
+
+    @SubscribeEvent
+    public static void onShieldBlock(LivingShieldBlockEvent event) {
+        if (!(event.getEntity() instanceof Player player) || !(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+        ItemStack shield = player.getUseItem();
+        if (shield.isEmpty()) {
+            return;
+        }
+        LivingEntity attacker = event.getDamageSource().getEntity() instanceof LivingEntity living ? living : null;
+        // Reactive shield triggers composed on_hit / on_crit abilities back at the attacker
+        if (!triggerAbilities(level, player, attacker, shield, AspectIds.TRIGGER_ON_HIT)) {
+            triggerAbilities(level, player, attacker, shield, AspectIds.TRIGGER_ON_CRIT);
+        }
     }
 
     @SubscribeEvent

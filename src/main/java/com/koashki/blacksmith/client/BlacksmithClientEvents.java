@@ -72,6 +72,8 @@ public final class BlacksmithClientEvents {
                 return 0xFF000000 | (rgb & 0x00FFFFFF);
             }, ModItems.FORGED_SWORD.get(), ModItems.FORGED_GREATSWORD.get(), ModItems.FORGED_DAGGER.get(),
                     ModItems.FORGED_SPEAR.get(), ModItems.FORGED_WAR_HAMMER.get(),
+                    ModItems.FORGED_PICKAXE.get(), ModItems.FORGED_AXE.get(), ModItems.FORGED_SHOVEL.get(),
+                    ModItems.FORGED_HOE.get(), ModItems.FORGED_SHIELD.get(),
                     ModItems.MOLTEN_ALLOY.get(), ModItems.ASPECT_ESSENCE.get());
         }
     }

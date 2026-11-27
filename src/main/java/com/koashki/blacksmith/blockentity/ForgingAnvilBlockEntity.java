@@ -476,8 +476,7 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
 
         billet.shrink(1);
 
-        ForgedWeaponItem weaponItem = ModItems.weaponForArchetype(selectedArchetype);
-        ItemStack result = new ItemStack(weaponItem);
+        ItemStack result = new ItemStack(ModItems.itemForArchetype(selectedArchetype));
 
         float finalScore = previewFinalScore();
         ItemGradeData gradeData = GradingEngine.finalizeForgeForPlayer(

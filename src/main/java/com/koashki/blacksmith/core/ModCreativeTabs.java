@@ -33,6 +33,11 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.FORGED_DAGGER.get());
                         output.accept(ModItems.FORGED_SPEAR.get());
                         output.accept(ModItems.FORGED_WAR_HAMMER.get());
+                        output.accept(ModItems.FORGED_PICKAXE.get());
+                        output.accept(ModItems.FORGED_AXE.get());
+                        output.accept(ModItems.FORGED_SHOVEL.get());
+                        output.accept(ModItems.FORGED_HOE.get());
+                        output.accept(ModItems.FORGED_SHIELD.get());
                     })
                     .build());
 

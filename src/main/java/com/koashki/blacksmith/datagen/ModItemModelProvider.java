@@ -27,6 +27,18 @@ public class ModItemModelProvider extends ItemModelProvider {
         handheldThreeLayerWeapon("forged_dagger");
         handheldThreeLayerWeapon("forged_spear");
         handheldThreeLayerWeapon("forged_war_hammer");
+        handheldThreeLayerWeapon("forged_pickaxe");
+        handheldThreeLayerWeapon("forged_axe");
+        handheldThreeLayerWeapon("forged_shovel");
+        handheldThreeLayerWeapon("forged_hoe");
+        generatedThreeLayer("forged_shield");
+    }
+
+    private void generatedThreeLayer(String name) {
+        withExistingParent(name, mcLoc("item/generated"))
+                .texture("layer0", modLoc("item/" + name + "_base"))
+                .texture("layer1", modLoc("item/" + name + "_accent"))
+                .texture("layer2", modLoc("item/" + name + "_handle"));
     }
 
     private void handheldSingle(String name) {

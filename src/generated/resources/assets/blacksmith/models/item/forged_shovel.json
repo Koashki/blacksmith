@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "blacksmith:item/forged_shovel_base",
+    "layer1": "blacksmith:item/forged_shovel_accent",
+    "layer2": "blacksmith:item/forged_shovel_handle"
+  }
+}

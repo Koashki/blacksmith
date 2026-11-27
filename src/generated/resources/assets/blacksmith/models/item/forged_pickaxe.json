@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "blacksmith:item/forged_pickaxe_base",
+    "layer1": "blacksmith:item/forged_pickaxe_accent",
+    "layer2": "blacksmith:item/forged_pickaxe_handle"
+  }
+}
