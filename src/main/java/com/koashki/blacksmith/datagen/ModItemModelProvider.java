@@ -12,55 +12,62 @@ public class ModItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        handheldSingle("stone_forging_hammer");
-        handheldSingle("iron_forging_hammer");
-        handheldSingle("gold_forging_hammer");
+        // Forging Hammers
+        handheldSingle("stone_forging_hammer", "hammer/stone_forging_hammer");
+        handheldSingle("iron_forging_hammer", "hammer/iron_forging_hammer");
+        handheldSingle("gold_forging_hammer", "hammer/gold_forging_hammer");
 
-        generatedTwoLayer("molten_alloy");
-        generatedSingle("refining_dust");
-        generatedTwoLayer("aspect_essence");
-        generatedSingle("smiths_ledger");
-        generatedSingle("torn_forge_note");
+        // Materials & Catalysts
+        generatedTwoLayer("molten_alloy", "material/molten_alloy");
+        generatedSingle("refining_dust", "material/refining_dust");
+        generatedTwoLayer("aspect_essence", "material/aspect_essence");
 
-        handheldThreeLayerWeapon("forged_sword");
-        handheldThreeLayerWeapon("forged_greatsword");
-        handheldThreeLayerWeapon("forged_dagger");
-        handheldThreeLayerWeapon("forged_spear");
-        handheldThreeLayerWeapon("forged_war_hammer");
-        handheldThreeLayerWeapon("forged_pickaxe");
-        handheldThreeLayerWeapon("forged_axe");
-        handheldThreeLayerWeapon("forged_shovel");
-        handheldThreeLayerWeapon("forged_hoe");
-        generatedThreeLayer("forged_shield");
+        // Discovery & Lore
+        generatedSingle("smiths_ledger", "lore/smiths_ledger");
+        generatedSingle("torn_forge_note", "lore/torn_forge_note");
+
+        // Modular Forged Weapons
+        handheldThreeLayer("forged_sword", "weapon/forged_sword");
+        handheldThreeLayer("forged_greatsword", "weapon/forged_greatsword");
+        handheldThreeLayer("forged_dagger", "weapon/forged_dagger");
+        handheldThreeLayer("forged_spear", "weapon/forged_spear");
+        handheldThreeLayer("forged_war_hammer", "weapon/forged_war_hammer");
+
+        // Modular Forged Survival Tools & Shield
+        handheldThreeLayer("forged_pickaxe", "tool/forged_pickaxe");
+        handheldThreeLayer("forged_axe", "tool/forged_axe");
+        handheldThreeLayer("forged_shovel", "tool/forged_shovel");
+        handheldThreeLayer("forged_hoe", "tool/forged_hoe");
+        generatedThreeLayer("forged_shield", "tool/forged_shield");
     }
 
-    private void generatedThreeLayer(String name) {
-        withExistingParent(name, mcLoc("item/generated"))
-                .texture("layer0", modLoc("item/" + name + "_base"))
-                .texture("layer1", modLoc("item/" + name + "_accent"))
-                .texture("layer2", modLoc("item/" + name + "_handle"));
+    private void handheldSingle(String itemName, String texturePath) {
+        withExistingParent(itemName, mcLoc("item/handheld"))
+                .texture("layer0", modLoc("item/" + texturePath));
     }
 
-    private void handheldSingle(String name) {
-        withExistingParent(name, mcLoc("item/handheld"))
-                .texture("layer0", modLoc("item/" + name));
+    private void generatedSingle(String itemName, String texturePath) {
+        withExistingParent(itemName, mcLoc("item/generated"))
+                .texture("layer0", modLoc("item/" + texturePath));
     }
 
-    private void generatedSingle(String name) {
-        withExistingParent(name, mcLoc("item/generated"))
-                .texture("layer0", modLoc("item/" + name));
+    private void generatedTwoLayer(String itemName, String texturePrefix) {
+        withExistingParent(itemName, mcLoc("item/generated"))
+                .texture("layer0", modLoc("item/" + texturePrefix + "_base"))
+                .texture("layer1", modLoc("item/" + texturePrefix + "_accent"));
     }
 
-    private void generatedTwoLayer(String name) {
-        withExistingParent(name, mcLoc("item/generated"))
-                .texture("layer0", modLoc("item/" + name + "_base"))
-                .texture("layer1", modLoc("item/" + name + "_accent"));
+    private void handheldThreeLayer(String itemName, String texturePrefix) {
+        withExistingParent(itemName, mcLoc("item/handheld"))
+                .texture("layer0", modLoc("item/" + texturePrefix + "_base"))
+                .texture("layer1", modLoc("item/" + texturePrefix + "_accent"))
+                .texture("layer2", modLoc("item/" + texturePrefix + "_handle"));
     }
 
-    private void handheldThreeLayerWeapon(String name) {
-        withExistingParent(name, mcLoc("item/handheld"))
-                .texture("layer0", modLoc("item/" + name + "_base"))
-                .texture("layer1", modLoc("item/" + name + "_accent"))
-                .texture("layer2", modLoc("item/" + name + "_handle"));
+    private void generatedThreeLayer(String itemName, String texturePrefix) {
+        withExistingParent(itemName, mcLoc("item/generated"))
+                .texture("layer0", modLoc("item/" + texturePrefix + "_base"))
+                .texture("layer1", modLoc("item/" + texturePrefix + "_accent"))
+                .texture("layer2", modLoc("item/" + texturePrefix + "_handle"));
     }
 }

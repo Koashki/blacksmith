@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "blacksmith:item/torn_forge_note"
+    "layer0": "blacksmith:item/lore/torn_forge_note"
   }
 }

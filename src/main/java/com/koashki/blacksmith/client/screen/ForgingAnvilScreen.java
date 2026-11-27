@@ -6,7 +6,7 @@ import com.koashki.blacksmith.component.GradeTier;
 import com.koashki.blacksmith.component.ItemGradeData;
 import com.koashki.blacksmith.core.ModAttachments;
 import com.koashki.blacksmith.core.ModDataComponents;
-import com.koashki.blacksmith.item.ForgedArchetype;
+import com.koashki.blacksmith.item.forged.ForgedArchetype;
 import com.koashki.blacksmith.menu.ForgingAnvilMenu;
 import com.koashki.blacksmith.network.MasterpieceNamePayload;
 import com.koashki.blacksmith.network.WorkstationActionPayload;

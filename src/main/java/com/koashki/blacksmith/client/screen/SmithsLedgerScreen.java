@@ -2,6 +2,7 @@ package com.koashki.blacksmith.client.screen;
 
 import com.koashki.blacksmith.aspect.AspectReactionDefinition;
 import com.koashki.blacksmith.aspect.AspectRegistryManager;
+import com.koashki.blacksmith.aspect.AspectTextUtil;
 import com.koashki.blacksmith.aspect.ForgeNoteLibrary;
 import com.koashki.blacksmith.aspect.ItemAspectMapping;
 import com.koashki.blacksmith.component.DiscoveredBlueprintsData;
@@ -135,7 +136,7 @@ public class SmithsLedgerScreen extends Screen {
             ItemAspectMapping map = AspectRegistryManager.analyzeItem(new ItemStack(item));
             String name = item.getDescription().getString();
             String aspects = map.aspects().entrySet().stream()
-                    .map(e -> prettify(e.getKey()) + " " + e.getValue())
+                    .map(e -> AspectTextUtil.prettify(e.getKey()) + " " + e.getValue())
                     .collect(Collectors.joining(", "));
             gui.drawString(font, "• " + name, x, cursorY, 0xFF2B1C10, false);
             gui.drawString(font, "  " + aspects, x, cursorY + 10, 0xFF6B4E35, false);
@@ -156,8 +157,8 @@ public class SmithsLedgerScreen extends Screen {
         for (int i = start; i < end; i++) {
             AspectReactionDefinition def = all.get(i);
             if (ledger.hasReaction(def.id())) {
-                gui.drawString(font, "⚡ " + prettify(def.id()), x, cursorY, 0xFF8C4600, false);
-                String formula = prettify(def.aspectA()) + " + " + prettify(def.aspectB()) + " → " + prettify(def.effect());
+                gui.drawString(font, "⚡ " + AspectTextUtil.prettify(def.id()), x, cursorY, 0xFF8C4600, false);
+                String formula = AspectTextUtil.prettify(def.aspectA()) + " + " + AspectTextUtil.prettify(def.aspectB()) + " → " + AspectTextUtil.prettify(def.effect());
                 gui.drawString(font, "  " + formula, x, cursorY + 10, 0xFF4A3728, false);
             } else {
                 gui.drawString(font, "⚡ ???", x, cursorY, 0xFF7D6B5D, false);
@@ -192,18 +193,6 @@ public class SmithsLedgerScreen extends Screen {
             gui.drawString(font, line, x, cy, color, false);
             cy += 10;
         }
-    }
-
-    private static String prettify(ResourceLocation id) {
-        String[] parts = id.getPath().split("_");
-        StringBuilder sb = new StringBuilder();
-        for (String p : parts) {
-            if (!p.isEmpty()) {
-                if (!sb.isEmpty()) sb.append(' ');
-                sb.append(Character.toUpperCase(p.charAt(0))).append(p.substring(1));
-            }
-        }
-        return sb.toString();
     }
 
     @Override

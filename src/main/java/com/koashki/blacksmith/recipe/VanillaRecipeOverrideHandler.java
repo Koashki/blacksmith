@@ -1,5 +1,7 @@
-package com.koashki.blacksmith.core;
+package com.koashki.blacksmith.recipe;
 
+import com.koashki.blacksmith.core.BlacksmithMod;
+import com.koashki.blacksmith.core.ModConfigs;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;

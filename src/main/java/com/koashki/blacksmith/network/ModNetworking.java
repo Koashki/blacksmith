@@ -5,7 +5,7 @@ import com.koashki.blacksmith.blockentity.ForgingAnvilBlockEntity;
 import com.koashki.blacksmith.blockentity.SynthesisChamberBlockEntity;
 import com.koashki.blacksmith.core.BlacksmithMod;
 import com.koashki.blacksmith.core.ModAttachments;
-import com.koashki.blacksmith.item.ForgedArchetype;
+import com.koashki.blacksmith.item.forged.ForgedArchetype;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.SubscribeEvent;

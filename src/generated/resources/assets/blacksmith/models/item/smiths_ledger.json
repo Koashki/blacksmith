@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "blacksmith:item/smiths_ledger"
+    "layer0": "blacksmith:item/lore/smiths_ledger"
   }
 }

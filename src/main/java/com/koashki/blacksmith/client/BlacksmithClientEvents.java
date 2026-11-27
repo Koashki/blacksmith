@@ -1,6 +1,7 @@
 package com.koashki.blacksmith.client;
 
 import com.koashki.blacksmith.aspect.AspectRegistryManager;
+import com.koashki.blacksmith.aspect.AspectTextUtil;
 import com.koashki.blacksmith.aspect.ItemAspectMapping;
 import com.koashki.blacksmith.client.renderer.ForgingAnvilRenderer;
 import com.koashki.blacksmith.client.screen.BlastForgeScreen;
@@ -119,13 +120,13 @@ public final class BlacksmithClientEvents {
             if (abilities != null && !abilities.abilities().isEmpty()) {
                 for (ComposedAbilitiesData.ComposedAbility ability : abilities.abilities()) {
                     String label = ability.reactionId()
-                            .map(id -> "⚡ Reaction: " + prettify(id))
-                            .orElse("◆ " + prettify(ability.trigger()) + " → " + prettify(ability.effect()));
+                            .map(id -> "⚡ Reaction: " + AspectTextUtil.prettify(id))
+                            .orElse("◆ " + AspectTextUtil.prettify(ability.trigger()) + " → " + AspectTextUtil.prettify(ability.effect()));
                     event.getToolTip().add(Component.literal(label)
                             .withStyle(ability.reactionId().isPresent() ? ChatFormatting.GOLD : ChatFormatting.AQUA));
                 }
                 for (ResourceLocation quirk : abilities.quirks()) {
-                    event.getToolTip().add(Component.literal("⚠ Instability Flaw: " + prettify(quirk)).withStyle(ChatFormatting.RED));
+                    event.getToolTip().add(Component.literal("⚠ Instability Flaw: " + AspectTextUtil.prettify(quirk)).withStyle(ChatFormatting.RED));
                 }
             }
 
@@ -136,7 +137,7 @@ public final class BlacksmithClientEvents {
                 if (ledger.hasItem(itemId)) {
                     ItemAspectMapping mapping = AspectRegistryManager.analyzeItem(stack);
                     String aspectList = mapping.aspects().keySet().stream()
-                            .map(GameBusEvents::prettify)
+                            .map(AspectTextUtil::prettify)
                             .collect(Collectors.joining(", "));
                     event.getToolTip().add(Component.literal("Ledger Aspects: ").withStyle(ChatFormatting.GOLD)
                             .append(Component.literal(aspectList).withStyle(ChatFormatting.YELLOW)));
@@ -155,18 +156,6 @@ public final class BlacksmithClientEvents {
                 event.setBorderStart(0xFF000000 | rgb);
                 event.setBorderEnd(0xAA000000 | rgb);
             }
-        }
-
-        private static String prettify(ResourceLocation id) {
-            String[] parts = id.getPath().split("_");
-            StringBuilder sb = new StringBuilder();
-            for (String p : parts) {
-                if (!p.isEmpty()) {
-                    if (!sb.isEmpty()) sb.append(' ');
-                    sb.append(Character.toUpperCase(p.charAt(0))).append(p.substring(1));
-                }
-            }
-            return sb.toString();
         }
     }
 }

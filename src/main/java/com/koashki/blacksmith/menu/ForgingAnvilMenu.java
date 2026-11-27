@@ -3,7 +3,7 @@ package com.koashki.blacksmith.menu;
 import com.koashki.blacksmith.blockentity.ForgingAnvilBlockEntity;
 import com.koashki.blacksmith.core.ModBlocks;
 import com.koashki.blacksmith.core.ModMenus;
-import com.koashki.blacksmith.item.ForgedArchetype;
+import com.koashki.blacksmith.item.forged.ForgedArchetype;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;

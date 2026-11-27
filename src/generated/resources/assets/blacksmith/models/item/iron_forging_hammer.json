@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/handheld",
   "textures": {
-    "layer0": "blacksmith:item/iron_forging_hammer"
+    "layer0": "blacksmith:item/hammer/iron_forging_hammer"
   }
 }

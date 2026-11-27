@@ -8,7 +8,7 @@ import com.koashki.blacksmith.component.ForgingHeatData;
 import com.koashki.blacksmith.core.ModBlockEntities;
 import com.koashki.blacksmith.core.ModDataComponents;
 import com.koashki.blacksmith.core.ModItems;
-import com.koashki.blacksmith.item.ForgedArchetype;
+import com.koashki.blacksmith.item.forged.ForgedArchetype;
 import com.koashki.blacksmith.menu.BlastForgeMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
