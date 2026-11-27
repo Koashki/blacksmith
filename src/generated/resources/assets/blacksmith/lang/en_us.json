@@ -18,6 +18,8 @@
   "item.blacksmith.iron_forging_hammer": "Iron Forging Hammer",
   "item.blacksmith.molten_alloy": "Molten Alloy Billet",
   "item.blacksmith.refining_dust": "Refining Dust",
+  "item.blacksmith.smiths_ledger": "Smith's Ledger",
   "item.blacksmith.stone_forging_hammer": "Stone Forging Hammer",
+  "item.blacksmith.torn_forge_note": "Torn Forge Note",
   "itemGroup.blacksmith": "Blacksmith"
 }

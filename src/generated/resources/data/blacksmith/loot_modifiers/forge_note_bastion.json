@@ -1,0 +1,10 @@
+{
+  "type": "blacksmith:add_forge_note",
+  "chance": 0.45,
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/bastion_treasure"
+    }
+  ]
+}

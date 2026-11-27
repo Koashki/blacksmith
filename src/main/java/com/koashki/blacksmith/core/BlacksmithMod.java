@@ -21,6 +21,7 @@ public class BlacksmithMod {
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModMenus.register(modEventBus);
+        ModLootModifiers.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 
         modEventBus.addListener(ModDataGenerators::gatherData);

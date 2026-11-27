@@ -21,6 +21,8 @@ public class ModItemModelProvider extends ItemModelProvider {
         generatedVanilla("molten_alloy", "item/iron_ingot");
         generatedVanilla("refining_dust", "item/glowstone_dust");
         generatedVanilla("aspect_essence", "item/amethyst_shard");
+        generatedVanilla("smiths_ledger", "item/writable_book");
+        generatedVanilla("torn_forge_note", "item/paper");
 
         handheldVanilla("forged_sword", "item/iron_sword");
         handheldVanilla("forged_greatsword", "item/iron_sword");

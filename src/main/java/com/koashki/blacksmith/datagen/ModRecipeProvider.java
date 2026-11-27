@@ -8,6 +8,7 @@ import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.world.item.Items;
 
 import java.util.concurrent.CompletableFuture;
@@ -78,6 +79,13 @@ public class ModRecipeProvider extends RecipeProvider {
                 .define('O', Items.OBSIDIAN)
                 .define('R', Items.REDSTONE_BLOCK)
                 .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
+                .save(output);
+
+        // Smith's Ledger (Book + Iron Nugget)
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.SMITHS_LEDGER.get())
+                .requires(Items.BOOK)
+                .requires(Items.IRON_NUGGET)
+                .unlockedBy("has_book", has(Items.BOOK))
                 .save(output);
     }
 }

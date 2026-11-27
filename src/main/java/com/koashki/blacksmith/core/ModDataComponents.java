@@ -1,6 +1,7 @@
 package com.koashki.blacksmith.core;
 
 import com.koashki.blacksmith.component.ComposedAbilitiesData;
+import com.koashki.blacksmith.component.ForgeNoteData;
 import com.koashki.blacksmith.component.ForgedCompositionData;
 import com.koashki.blacksmith.component.ForgingHeatData;
 import com.koashki.blacksmith.component.ItemGradeData;
@@ -39,6 +40,11 @@ public final class ModDataComponents {
             DATA_COMPONENTS.registerComponentType("composed_abilities", builder -> builder
                     .persistent(ComposedAbilitiesData.CODEC)
                     .networkSynchronized(ComposedAbilitiesData.STREAM_CODEC));
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ForgeNoteData>> FORGE_NOTE =
+            DATA_COMPONENTS.registerComponentType("forge_note", builder -> builder
+                    .persistent(ForgeNoteData.CODEC)
+                    .networkSynchronized(ForgeNoteData.STREAM_CODEC));
 
     private ModDataComponents() {}
 

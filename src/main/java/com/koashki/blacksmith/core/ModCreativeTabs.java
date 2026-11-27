@@ -26,6 +26,8 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.MOLTEN_ALLOY.get());
                         output.accept(ModItems.REFINING_DUST.get());
                         output.accept(ModItems.ASPECT_ESSENCE.get());
+                        output.accept(ModItems.SMITHS_LEDGER.get());
+                        output.accept(ModItems.TORN_FORGE_NOTE.get());
                         output.accept(ModItems.FORGED_SWORD.get());
                         output.accept(ModItems.FORGED_GREATSWORD.get());
                         output.accept(ModItems.FORGED_DAGGER.get());

@@ -1,18 +1,26 @@
 package com.koashki.blacksmith.client;
 
+import com.koashki.blacksmith.aspect.AspectRegistryManager;
+import com.koashki.blacksmith.aspect.ItemAspectMapping;
 import com.koashki.blacksmith.client.screen.BlastForgeScreen;
 import com.koashki.blacksmith.client.screen.ForgingAnvilScreen;
+import com.koashki.blacksmith.client.screen.SmithsLedgerScreen;
 import com.koashki.blacksmith.client.screen.SynthesisChamberScreen;
 import com.koashki.blacksmith.component.ComposedAbilitiesData;
+import com.koashki.blacksmith.component.DiscoveredBlueprintsData;
 import com.koashki.blacksmith.component.ForgedCompositionData;
 import com.koashki.blacksmith.component.ItemGradeData;
 import com.koashki.blacksmith.component.SynthesisStarData;
 import com.koashki.blacksmith.core.BlacksmithMod;
+import com.koashki.blacksmith.core.ModAttachments;
 import com.koashki.blacksmith.core.ModConfigs;
 import com.koashki.blacksmith.core.ModDataComponents;
 import com.koashki.blacksmith.core.ModItems;
 import com.koashki.blacksmith.core.ModMenus;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -24,8 +32,14 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
+import java.util.stream.Collectors;
+
 public final class BlacksmithClientEvents {
     private BlacksmithClientEvents() {}
+
+    public static void openLedgerScreen() {
+        Minecraft.getInstance().setScreen(new SmithsLedgerScreen());
+    }
 
     @EventBusSubscriber(modid = BlacksmithMod.MOD_ID, value = Dist.CLIENT)
     public static final class ModBusEvents {
@@ -89,6 +103,20 @@ public final class BlacksmithClientEvents {
                 }
                 for (ResourceLocation quirk : abilities.quirks()) {
                     event.getToolTip().add(Component.literal("⚠ Instability Flaw: " + prettify(quirk)).withStyle(ChatFormatting.RED));
+                }
+            }
+
+            // Show discovered material Aspects when holding Shift (silent for uncharted items)
+            if (Screen.hasShiftDown() && grade == null && !stack.isEmpty() && event.getEntity() != null) {
+                DiscoveredBlueprintsData ledger = event.getEntity().getData(ModAttachments.DISCOVERED_BLUEPRINTS);
+                ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+                if (ledger.hasItem(itemId)) {
+                    ItemAspectMapping mapping = AspectRegistryManager.analyzeItem(stack);
+                    String aspectList = mapping.aspects().keySet().stream()
+                            .map(GameBusEvents::prettify)
+                            .collect(Collectors.joining(", "));
+                    event.getToolTip().add(Component.literal("Ledger Aspects: ").withStyle(ChatFormatting.GOLD)
+                            .append(Component.literal(aspectList).withStyle(ChatFormatting.YELLOW)));
                 }
             }
         }

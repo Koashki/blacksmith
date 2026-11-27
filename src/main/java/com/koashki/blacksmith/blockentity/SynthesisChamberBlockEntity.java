@@ -212,6 +212,19 @@ public class SynthesisChamberBlockEntity extends BlockEntity implements MenuProv
             if (!player.getInventory().add(dust)) {
                 player.drop(dust, false);
             }
+
+            // Assaying via Essence Extraction also records materials in the Smith's Ledger
+            var ledger = player.getData(com.koashki.blacksmith.core.ModAttachments.DISCOVERED_BLUEPRINTS);
+            var updated = ledger.withItem(comp.baseMaterial());
+            for (var mat : comp.infusedMaterials()) {
+                updated = updated.withItem(mat);
+            }
+            if (!updated.equals(ledger)) {
+                player.setData(com.koashki.blacksmith.core.ModAttachments.DISCOVERED_BLUEPRINTS, updated);
+                com.koashki.blacksmith.network.ModNetworking.syncLedger(player);
+                player.displayClientMessage(Component.literal("Assayed material recorded in Smith's Ledger!")
+                        .withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE), true);
+            }
         } else {
             inventory.setStackInSlot(SLOT_OUTPUT, new ItemStack(ModItems.REFINING_DUST.get(), dustCount));
         }

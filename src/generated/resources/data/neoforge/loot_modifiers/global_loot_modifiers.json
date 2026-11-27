@@ -1,0 +1,8 @@
+{
+  "entries": [
+    "blacksmith:forge_note_dungeon",
+    "blacksmith:forge_note_mineshaft",
+    "blacksmith:forge_note_bastion"
+  ],
+  "replace": false
+}

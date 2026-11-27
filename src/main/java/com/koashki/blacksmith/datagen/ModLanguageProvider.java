@@ -27,6 +27,8 @@ public class ModLanguageProvider extends LanguageProvider {
         addItem(ModItems.MOLTEN_ALLOY, "Molten Alloy Billet");
         addItem(ModItems.REFINING_DUST, "Refining Dust");
         addItem(ModItems.ASPECT_ESSENCE, "Aspect Essence");
+        addItem(ModItems.SMITHS_LEDGER, "Smith's Ledger");
+        addItem(ModItems.TORN_FORGE_NOTE, "Torn Forge Note");
         addItem(ModItems.FORGED_SWORD, "Forged Sword");
         addItem(ModItems.FORGED_GREATSWORD, "Forged Greatsword");
         addItem(ModItems.FORGED_DAGGER, "Forged Dagger");
