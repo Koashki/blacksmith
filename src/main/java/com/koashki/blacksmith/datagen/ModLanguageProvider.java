@@ -34,6 +34,11 @@ public class ModLanguageProvider extends LanguageProvider {
         addItem(ModItems.FORGED_DAGGER, "Forged Dagger");
         addItem(ModItems.FORGED_SPEAR, "Forged Spear");
         addItem(ModItems.FORGED_WAR_HAMMER, "Forged War Hammer");
+        addItem(ModItems.FORGED_PICKAXE, "Forged Pickaxe");
+        addItem(ModItems.FORGED_AXE, "Forged Axe");
+        addItem(ModItems.FORGED_SHOVEL, "Forged Shovel");
+        addItem(ModItems.FORGED_HOE, "Forged Hoe");
+        addItem(ModItems.FORGED_SHIELD, "Forged Shield");
 
         // Grade Tiers
         add("grade.blacksmith.normal", "Normal");

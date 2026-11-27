@@ -2,6 +2,11 @@ package com.koashki.blacksmith.core;
 
 import com.koashki.blacksmith.item.AspectEssenceItem;
 import com.koashki.blacksmith.item.ForgedArchetype;
+import com.koashki.blacksmith.item.ForgedAxeItem;
+import com.koashki.blacksmith.item.ForgedHoeItem;
+import com.koashki.blacksmith.item.ForgedPickaxeItem;
+import com.koashki.blacksmith.item.ForgedShieldItem;
+import com.koashki.blacksmith.item.ForgedShovelItem;
 import com.koashki.blacksmith.item.ForgedWeaponItem;
 import com.koashki.blacksmith.item.ForgingHammerItem;
 import com.koashki.blacksmith.item.MoltenAlloyItem;
@@ -50,15 +55,32 @@ public final class ModItems {
     public static final DeferredItem<ForgedWeaponItem> FORGED_WAR_HAMMER = ITEMS.register("forged_war_hammer",
             () -> new ForgedWeaponItem(ForgedArchetype.WAR_HAMMER, new Item.Properties()));
 
+    // Modular Forged Survival Tools & Shield
+    public static final DeferredItem<ForgedPickaxeItem> FORGED_PICKAXE = ITEMS.register("forged_pickaxe",
+            () -> new ForgedPickaxeItem(new Item.Properties()));
+    public static final DeferredItem<ForgedAxeItem> FORGED_AXE = ITEMS.register("forged_axe",
+            () -> new ForgedAxeItem(new Item.Properties()));
+    public static final DeferredItem<ForgedShovelItem> FORGED_SHOVEL = ITEMS.register("forged_shovel",
+            () -> new ForgedShovelItem(new Item.Properties()));
+    public static final DeferredItem<ForgedHoeItem> FORGED_HOE = ITEMS.register("forged_hoe",
+            () -> new ForgedHoeItem(new Item.Properties()));
+    public static final DeferredItem<ForgedShieldItem> FORGED_SHIELD = ITEMS.register("forged_shield",
+            () -> new ForgedShieldItem(new Item.Properties()));
+
     private ModItems() {}
 
-    public static ForgedWeaponItem weaponForArchetype(ForgedArchetype archetype) {
+    public static Item itemForArchetype(ForgedArchetype archetype) {
         return switch (archetype) {
             case SWORD -> FORGED_SWORD.get();
             case GREATSWORD -> FORGED_GREATSWORD.get();
             case DAGGER -> FORGED_DAGGER.get();
             case SPEAR -> FORGED_SPEAR.get();
             case WAR_HAMMER -> FORGED_WAR_HAMMER.get();
+            case PICKAXE -> FORGED_PICKAXE.get();
+            case AXE -> FORGED_AXE.get();
+            case SHOVEL -> FORGED_SHOVEL.get();
+            case HOE -> FORGED_HOE.get();
+            case SHIELD -> FORGED_SHIELD.get();
         };
     }
 
