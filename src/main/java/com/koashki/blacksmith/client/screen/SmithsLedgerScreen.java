@@ -24,7 +24,7 @@ public class SmithsLedgerScreen extends Screen {
     private static final int BOOK_W = 244;
     private static final int BOOK_H = 196;
 
-    private int activeTab = 0; // 0 = Materials, 1 = Reactions, 2 = Forge Notes
+    private int activeTab = 0; // 0 = Materials, 1 = Reactions, 2 = Forge Notes, 3 = Legends
     private int page = 0;
 
     public SmithsLedgerScreen() {
@@ -37,11 +37,13 @@ public class SmithsLedgerScreen extends Screen {
         int top = (height - BOOK_H) / 2;
 
         addRenderableWidget(Button.builder(Component.literal("Materials"), b -> switchTab(0))
-                .bounds(left + 10, top + 22, 68, 16).build());
+                .bounds(left + 8, top + 22, 55, 16).build());
         addRenderableWidget(Button.builder(Component.literal("Reactions"), b -> switchTab(1))
-                .bounds(left + 84, top + 22, 68, 16).build());
-        addRenderableWidget(Button.builder(Component.literal("Forge Notes"), b -> switchTab(2))
-                .bounds(left + 158, top + 22, 76, 16).build());
+                .bounds(left + 66, top + 22, 55, 16).build());
+        addRenderableWidget(Button.builder(Component.literal("Notes"), b -> switchTab(2))
+                .bounds(left + 124, top + 22, 55, 16).build());
+        addRenderableWidget(Button.builder(Component.literal("Legends"), b -> switchTab(3))
+                .bounds(left + 182, top + 22, 54, 16).build());
 
         addRenderableWidget(Button.builder(Component.literal("< Prev"), b -> page = Math.max(0, page - 1))
                 .bounds(left + 12, top + BOOK_H - 24, 52, 16).build());
@@ -87,9 +89,31 @@ public class SmithsLedgerScreen extends Screen {
             renderMaterialsTab(gui, ledger, contentX, contentY, maxWidth);
         } else if (activeTab == 1) {
             renderReactionsTab(gui, ledger, contentX, contentY, maxWidth);
-        } else {
+        } else if (activeTab == 2) {
             renderNotesTab(gui, ledger, contentX, contentY, maxWidth);
+        } else {
+            renderLegendsTab(gui, ledger, contentX, contentY, maxWidth);
         }
+    }
+
+    private void renderLegendsTab(GuiGraphics gui, DiscoveredBlueprintsData ledger, int x, int y, int maxW) {
+        List<String> legends = ledger.masterpieceHistory();
+        if (legends.isEmpty()) {
+            drawWrapped(gui, "No Masterpieces inscribed yet. Roll a Legendary or Mythic Breakthrough on the Forging Anvil and inscribe its name to immortalize it here.", x, y, maxW, 0xFF5C4736);
+            return;
+        }
+        int perPage = 6;
+        int maxPage = Math.max(0, (legends.size() - 1) / perPage);
+        page = Math.clamp(page, 0, maxPage);
+
+        int start = page * perPage;
+        int end = Math.min(legends.size(), start + perPage);
+        int cursorY = y;
+        for (int i = start; i < end; i++) {
+            gui.drawString(font, "★ " + legends.get(i), x, cursorY, 0xFF8C3A00, false);
+            cursorY += 16;
+        }
+        gui.drawCenteredString(font, (page + 1) + " / " + (maxPage + 1), x + maxW / 2, y + 124, 0xFF5C4736);
     }
 
     private void renderMaterialsTab(GuiGraphics gui, DiscoveredBlueprintsData ledger, int x, int y, int maxW) {
