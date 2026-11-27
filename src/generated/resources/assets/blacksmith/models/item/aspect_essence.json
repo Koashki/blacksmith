@@ -1,6 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:item/amethyst_shard"
+    "layer0": "blacksmith:item/aspect_essence_base",
+    "layer1": "blacksmith:item/aspect_essence_accent"
   }
 }
