@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:item/handheld",
   "textures": {
-    "layer0": "blacksmith:item/forged_axe_base",
-    "layer1": "blacksmith:item/forged_axe_accent",
-    "layer2": "blacksmith:item/forged_axe_handle"
+    "layer0": "blacksmith:item/tool/forged_axe_base",
+    "layer1": "blacksmith:item/tool/forged_axe_accent",
+    "layer2": "blacksmith:item/tool/forged_axe_handle"
   }
 }

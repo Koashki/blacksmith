@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:item/handheld",
   "textures": {
-    "layer0": "blacksmith:item/forged_spear_base",
-    "layer1": "blacksmith:item/forged_spear_accent",
-    "layer2": "blacksmith:item/forged_spear_handle"
+    "layer0": "blacksmith:item/weapon/forged_spear_base",
+    "layer1": "blacksmith:item/weapon/forged_spear_accent",
+    "layer2": "blacksmith:item/weapon/forged_spear_handle"
   }
 }

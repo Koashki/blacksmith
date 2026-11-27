@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "blacksmith:item/forged_shield_base",
-    "layer1": "blacksmith:item/forged_shield_accent",
-    "layer2": "blacksmith:item/forged_shield_handle"
+    "layer0": "blacksmith:item/tool/forged_shield_base",
+    "layer1": "blacksmith:item/tool/forged_shield_accent",
+    "layer2": "blacksmith:item/tool/forged_shield_handle"
   }
 }

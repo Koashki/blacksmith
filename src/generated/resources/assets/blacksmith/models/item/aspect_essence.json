@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "blacksmith:item/aspect_essence_base",
-    "layer1": "blacksmith:item/aspect_essence_accent"
+    "layer0": "blacksmith:item/material/aspect_essence_base",
+    "layer1": "blacksmith:item/material/aspect_essence_accent"
   }
 }
