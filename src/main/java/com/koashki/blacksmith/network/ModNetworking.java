@@ -26,6 +26,7 @@ public final class ModNetworking {
         registrar.playToServer(WorkstationActionPayload.TYPE, WorkstationActionPayload.STREAM_CODEC, ModNetworking::handleWorkstationAction);
         registrar.playToServer(MasterpieceNamePayload.TYPE, MasterpieceNamePayload.STREAM_CODEC, ModNetworking::handleMasterpieceName);
         registrar.playToClient(ProficiencySyncPayload.TYPE, ProficiencySyncPayload.STREAM_CODEC, ModNetworking::handleProficiencySync);
+        registrar.playToClient(LedgerSyncPayload.TYPE, LedgerSyncPayload.STREAM_CODEC, ModNetworking::handleLedgerSync);
     }
 
     private static void handleWorkstationAction(WorkstationActionPayload payload, IPayloadContext context) {
@@ -91,8 +92,20 @@ public final class ModNetworking {
         });
     }
 
+    private static void handleLedgerSync(LedgerSyncPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.player() != null) {
+                context.player().setData(ModAttachments.DISCOVERED_BLUEPRINTS, payload.ledger());
+            }
+        });
+    }
+
     public static void syncProficiency(ServerPlayer player) {
         PacketDistributor.sendToPlayer(player, new ProficiencySyncPayload(player.getData(ModAttachments.PROFICIENCY)));
+    }
+
+    public static void syncLedger(ServerPlayer player) {
+        PacketDistributor.sendToPlayer(player, new LedgerSyncPayload(player.getData(ModAttachments.DISCOVERED_BLUEPRINTS)));
     }
 
     @EventBusSubscriber(modid = BlacksmithMod.MOD_ID)
@@ -101,6 +114,7 @@ public final class ModNetworking {
         public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
             if (event.getEntity() instanceof ServerPlayer player) {
                 syncProficiency(player);
+                syncLedger(player);
             }
         }
     }

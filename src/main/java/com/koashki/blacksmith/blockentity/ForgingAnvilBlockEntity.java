@@ -363,8 +363,30 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
         result.set(ModDataComponents.COMPOSED_ABILITIES.get(), abilities);
         result.set(ModDataComponents.SYNTHESIS_STAR.get(), SynthesisStarData.EMPTY);
 
+        // Record discovered materials and emergent reactions in the player's Smith's Ledger
+        recordDiscoveries(player, finalComp, abilities);
+
         inventory.setStackInSlot(SLOT_OUTPUT, result);
         resetSession();
+    }
+
+    private void recordDiscoveries(ServerPlayer player, ForgedCompositionData comp, ComposedAbilitiesData abilities) {
+        var ledger = player.getData(com.koashki.blacksmith.core.ModAttachments.DISCOVERED_BLUEPRINTS);
+        var updated = ledger.withItem(comp.baseMaterial());
+        for (var mat : comp.infusedMaterials()) {
+            updated = updated.withItem(mat);
+        }
+        for (var ability : abilities.abilities()) {
+            if (ability.reactionId().isPresent()) {
+                updated = updated.withReaction(ability.reactionId().get());
+            }
+        }
+        if (!updated.equals(ledger)) {
+            player.setData(com.koashki.blacksmith.core.ModAttachments.DISCOVERED_BLUEPRINTS, updated);
+            com.koashki.blacksmith.network.ModNetworking.syncLedger(player);
+            player.displayClientMessage(Component.literal("New entry recorded in Smith's Ledger!")
+                    .withStyle(net.minecraft.ChatFormatting.GOLD), true);
+        }
     }
 
     private void resetSession() {

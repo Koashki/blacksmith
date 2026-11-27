@@ -47,7 +47,11 @@ public class BlastForgeBlockEntity extends BlockEntity implements MenuProvider {
     private final ItemStackHandler inventory = new ItemStackHandler(TOTAL_SLOTS) {
         @Override
         protected void onContentsChanged(int slot) {
+            recomputeDiegeticState();
             setChanged();
+            if (level != null && !level.isClientSide) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            }
         }
     };
 
@@ -55,6 +59,11 @@ public class BlastForgeBlockEntity extends BlockEntity implements MenuProvider {
     private int burnTime = 0;
     private int maxBurnTime = 0;
     private int bellowsCooldown = 0;
+
+    // Diegetic cues synced to client for flame tint, spark intensity, and audio
+    private int dominantColorRgb = 0xFF7A22;
+    private String dominantAspectPath = "thermal";
+    private float previewInstability = 0.0f;
 
     private final ContainerData dataAccess = new ContainerData() {
         @Override
@@ -98,6 +107,49 @@ public class BlastForgeBlockEntity extends BlockEntity implements MenuProvider {
 
     public float temperatureC() {
         return temperatureC;
+    }
+
+    public int dominantColorRgb() {
+        return dominantColorRgb;
+    }
+
+    public String dominantAspectPath() {
+        return dominantAspectPath;
+    }
+
+    public float previewInstability() {
+        return previewInstability;
+    }
+
+    private void recomputeDiegeticState() {
+        Map<ResourceLocation, Integer> merged = new LinkedHashMap<>();
+        float instability = 0.0f;
+        int color = 0xFF7A22;
+
+        ItemStack base = inventory.getStackInSlot(SLOT_BASE);
+        if (!base.isEmpty()) {
+            ItemAspectMapping baseMap = AspectRegistryManager.analyzeItem(base);
+            baseMap.aspects().forEach((k, v) -> merged.merge(k, v, Integer::sum));
+            instability += baseMap.instability();
+            color = baseMap.colorRgb();
+        }
+        for (int slot = SLOT_WILDCARD_START; slot <= SLOT_WILDCARD_END; slot++) {
+            ItemStack w = inventory.getStackInSlot(slot);
+            if (w.isEmpty()) {
+                continue;
+            }
+            ItemAspectMapping wMap = AspectRegistryManager.analyzeItem(w);
+            wMap.aspects().forEach((k, v) -> merged.merge(k, v, Integer::sum));
+            instability += wMap.instability();
+            color = wMap.colorRgb();
+        }
+
+        this.previewInstability = instability;
+        this.dominantColorRgb = color;
+        this.dominantAspectPath = merged.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(e -> e.getKey().getPath())
+                .orElse("thermal");
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, BlastForgeBlockEntity forge) {
@@ -220,6 +272,9 @@ public class BlastForgeBlockEntity extends BlockEntity implements MenuProvider {
         tag.putInt("BurnTime", burnTime);
         tag.putInt("MaxBurnTime", maxBurnTime);
         tag.putInt("BellowsCooldown", bellowsCooldown);
+        tag.putInt("DominantColor", dominantColorRgb);
+        tag.putString("DominantAspect", dominantAspectPath);
+        tag.putFloat("PreviewInstability", previewInstability);
     }
 
     @Override
@@ -232,6 +287,28 @@ public class BlastForgeBlockEntity extends BlockEntity implements MenuProvider {
         burnTime = tag.getInt("BurnTime");
         maxBurnTime = tag.getInt("MaxBurnTime");
         bellowsCooldown = tag.getInt("BellowsCooldown");
+        if (tag.contains("DominantColor")) {
+            dominantColorRgb = tag.getInt("DominantColor");
+        }
+        if (tag.contains("DominantAspect")) {
+            dominantAspectPath = tag.getString("DominantAspect");
+        }
+        previewInstability = tag.getFloat("PreviewInstability");
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("DominantColor", dominantColorRgb);
+        tag.putString("DominantAspect", dominantAspectPath);
+        tag.putFloat("PreviewInstability", previewInstability);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override

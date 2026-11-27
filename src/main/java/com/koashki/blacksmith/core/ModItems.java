@@ -6,6 +6,8 @@ import com.koashki.blacksmith.item.ForgedWeaponItem;
 import com.koashki.blacksmith.item.ForgingHammerItem;
 import com.koashki.blacksmith.item.MoltenAlloyItem;
 import com.koashki.blacksmith.item.RefiningDustItem;
+import com.koashki.blacksmith.item.SmithsLedgerItem;
+import com.koashki.blacksmith.item.TornForgeNoteItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -29,6 +31,12 @@ public final class ModItems {
             () -> new RefiningDustItem(new Item.Properties()));
     public static final DeferredItem<AspectEssenceItem> ASPECT_ESSENCE = ITEMS.register("aspect_essence",
             () -> new AspectEssenceItem(new Item.Properties()));
+
+    // Discovery & Lore Items
+    public static final DeferredItem<SmithsLedgerItem> SMITHS_LEDGER = ITEMS.register("smiths_ledger",
+            () -> new SmithsLedgerItem(new Item.Properties()));
+    public static final DeferredItem<TornForgeNoteItem> TORN_FORGE_NOTE = ITEMS.register("torn_forge_note",
+            () -> new TornForgeNoteItem(new Item.Properties()));
 
     // Modular Forged Weapon Archetypes
     public static final DeferredItem<ForgedWeaponItem> FORGED_SWORD = ITEMS.register("forged_sword",
