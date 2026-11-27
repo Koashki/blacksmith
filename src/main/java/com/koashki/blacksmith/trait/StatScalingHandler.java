@@ -1,5 +1,6 @@
 package com.koashki.blacksmith.trait;
 
+import com.koashki.blacksmith.component.EgoData;
 import com.koashki.blacksmith.component.ItemGradeData;
 import com.koashki.blacksmith.component.SynthesisStarData;
 import com.koashki.blacksmith.core.BlacksmithMod;
@@ -70,6 +71,10 @@ public final class StatScalingHandler {
         SynthesisStarData stars = stack.get(ModDataComponents.SYNTHESIS_STAR.get());
         if (stars != null) {
             bonus += stars.starBonusMultiplier();
+        }
+        EgoData ego = stack.get(ModDataComponents.EGO_DATA.get());
+        if (ego != null) {
+            bonus += ego.egoStatBonus();
         }
         return bonus;
     }

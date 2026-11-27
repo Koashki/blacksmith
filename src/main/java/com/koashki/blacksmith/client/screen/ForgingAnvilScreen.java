@@ -1,15 +1,22 @@
 package com.koashki.blacksmith.client.screen;
 
+import com.koashki.blacksmith.blockentity.ForgingAnvilBlockEntity;
 import com.koashki.blacksmith.component.BlacksmithProficiencyData;
+import com.koashki.blacksmith.component.GradeTier;
+import com.koashki.blacksmith.component.ItemGradeData;
 import com.koashki.blacksmith.core.ModAttachments;
+import com.koashki.blacksmith.core.ModDataComponents;
 import com.koashki.blacksmith.item.ForgedArchetype;
 import com.koashki.blacksmith.menu.ForgingAnvilMenu;
+import com.koashki.blacksmith.network.MasterpieceNamePayload;
 import com.koashki.blacksmith.network.WorkstationActionPayload;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
@@ -20,9 +27,15 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
     private static final int LATTICE_CELL = 34;
     private static final int LATTICE_GAP = 5;
 
+    // Masterpiece Naming modal dimensions
+    private static final int NAME_MODAL_W = 188;
+    private static final int NAME_MODAL_H = 104;
+
     private int chosenArchetypeIndex = 0;
     private double clientElapsedTicks = 0.0;
     private int lastSyncedStep = -1;
+    private boolean namingModalActive = false;
+    private boolean namingDismissedForCurrentOutput = false;
 
     private Button formBtn;
     private Button forgeBtn;
@@ -31,6 +44,10 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
     private Button stabBtn;
     private Button quenchBtn;
     private Button modalQuenchBtn;
+
+    private EditBox masterpieceNameBox;
+    private Button inscribeBtn;
+    private Button skipNameBtn;
 
     public ForgingAnvilScreen(ForgingAnvilMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -72,18 +89,79 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
                 .bounds(modalLeft + 20, modalTop + MODAL_H - 26, MODAL_W - 40, 18)
                 .build());
         modalQuenchBtn.visible = false;
+
+        int nmLeft = (width - NAME_MODAL_W) / 2;
+        int nmTop = (height - NAME_MODAL_H) / 2;
+        masterpieceNameBox = addRenderableWidget(new EditBox(font, nmLeft + 14, nmTop + 42, NAME_MODAL_W - 28, 18, Component.literal("Masterpiece Name")));
+        masterpieceNameBox.setMaxLength(32);
+        masterpieceNameBox.visible = false;
+
+        inscribeBtn = addRenderableWidget(Button.builder(Component.literal("Inscribe"), btn -> submitMasterpieceName())
+                .bounds(nmLeft + 14, nmTop + 70, 76, 18)
+                .build());
+        inscribeBtn.visible = false;
+
+        skipNameBtn = addRenderableWidget(Button.builder(Component.literal("Skip"), btn -> {
+                    namingDismissedForCurrentOutput = true;
+                    setNamingModalVisible(false);
+                })
+                .bounds(nmLeft + NAME_MODAL_W - 90, nmTop + 70, 76, 18)
+                .build());
+        skipNameBtn.visible = false;
+    }
+
+    private void submitMasterpieceName() {
+        String text = masterpieceNameBox != null ? masterpieceNameBox.getValue().trim() : "";
+        if (!text.isEmpty()) {
+            PacketDistributor.sendToServer(new MasterpieceNamePayload(menu.blockPos(), text));
+        }
+        namingDismissedForCurrentOutput = true;
+        setNamingModalVisible(false);
+    }
+
+    private void setNamingModalVisible(boolean visible) {
+        namingModalActive = visible;
+        if (masterpieceNameBox != null) {
+            masterpieceNameBox.visible = visible;
+            masterpieceNameBox.setFocused(visible);
+            if (visible) {
+                masterpieceNameBox.setValue("");
+                setFocused(masterpieceNameBox);
+            }
+        }
+        if (inscribeBtn != null) inscribeBtn.visible = visible;
+        if (skipNameBtn != null) skipNameBtn.visible = visible;
+    }
+
+    private ItemStack outputStack() {
+        return menu.slots.get(ForgingAnvilBlockEntity.SLOT_OUTPUT).getItem();
     }
 
     @Override
     protected void containerTick() {
         super.containerTick();
+
+        ItemStack out = outputStack();
+        if (out.isEmpty()) {
+            namingDismissedForCurrentOutput = false;
+            if (namingModalActive) {
+                setNamingModalVisible(false);
+            }
+        } else if (!menu.isSessionActive() && !menu.isLatticeActive() && !namingDismissedForCurrentOutput && !namingModalActive) {
+            ItemGradeData grade = out.get(ModDataComponents.ITEM_GRADE.get());
+            if (grade != null && grade.tier().isMasterpiece() && grade.customName().isEmpty()) {
+                setNamingModalVisible(true);
+            }
+        }
+
         boolean lattice = menu.isLatticeActive();
-        if (formBtn != null) formBtn.visible = !lattice;
-        if (forgeBtn != null) forgeBtn.visible = !lattice;
-        if (lightBtn != null) lightBtn.visible = !lattice;
-        if (heavyBtn != null) heavyBtn.visible = !lattice;
-        if (stabBtn != null) stabBtn.visible = !lattice;
-        if (quenchBtn != null) quenchBtn.visible = !lattice;
+        boolean modalBlocksBase = lattice || namingModalActive;
+        if (formBtn != null) formBtn.visible = !modalBlocksBase;
+        if (forgeBtn != null) forgeBtn.visible = !modalBlocksBase;
+        if (lightBtn != null) lightBtn.visible = !modalBlocksBase;
+        if (heavyBtn != null) heavyBtn.visible = !modalBlocksBase;
+        if (stabBtn != null) stabBtn.visible = !modalBlocksBase;
+        if (quenchBtn != null) quenchBtn.visible = !modalBlocksBase;
         if (modalQuenchBtn != null) modalQuenchBtn.visible = lattice;
 
         if (!menu.isSessionActive() || menu.isAwaitingOverForge() || lattice) {
@@ -118,6 +196,23 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (namingModalActive) {
+            if (masterpieceNameBox != null && masterpieceNameBox.mouseClicked(mouseX, mouseY, button)) {
+                setFocused(masterpieceNameBox);
+                return true;
+            }
+            if (button == 0) {
+                if (inscribeBtn != null && inscribeBtn.isMouseOver(mouseX, mouseY)) {
+                    inscribeBtn.onClick(mouseX, mouseY);
+                    return true;
+                }
+                if (skipNameBtn != null && skipNameBtn.isMouseOver(mouseX, mouseY)) {
+                    skipNameBtn.onClick(mouseX, mouseY);
+                    return true;
+                }
+            }
+            return true;
+        }
         if (menu.isLatticeActive()) {
             if (button == 0) {
                 if (modalQuenchBtn != null && modalQuenchBtn.isMouseOver(mouseX, mouseY)) {
@@ -130,7 +225,6 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
                     return true;
                 }
             }
-            // Swallow clicks while pop-out modal is active so underlying inventory slots aren't clicked
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -138,6 +232,22 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (namingModalActive) {
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                submitMasterpieceName();
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                namingDismissedForCurrentOutput = true;
+                setNamingModalVisible(false);
+                return true;
+            }
+            if (masterpieceNameBox != null && masterpieceNameBox.keyPressed(keyCode, scanCode, modifiers)) {
+                return true;
+            }
+            // Prevent 'E' inventory key from closing screen while typing a name
+            return true;
+        }
         if (menu.isSessionActive()) {
             if (keyCode == GLFW.GLFW_KEY_SPACE) {
                 sendStrike(ForgedArchetype.StrikeKind.QUENCH);
@@ -159,6 +269,14 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
             }
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char codePoint, int modifiers) {
+        if (namingModalActive && masterpieceNameBox != null) {
+            return masterpieceNameBox.charTyped(codePoint, modifiers);
+        }
+        return super.charTyped(codePoint, modifiers);
     }
 
     private int latticeOriginX() {
@@ -268,7 +386,6 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
     }
 
     private void renderOverForgeModal(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
-        // Dim the entire anvil & inventory behind a focused pop-out modal
         gui.pose().pushPose();
         gui.pose().translate(0, 0, 300.0f);
 
@@ -277,7 +394,6 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
         int mx = (width - MODAL_W) / 2;
         int my = (height - MODAL_H) / 2;
 
-        // Ornate dark-iron & molten-gold modal frame
         gui.fill(mx, my, mx + MODAL_W, my + MODAL_H, 0xFF1B191E);
         gui.renderOutline(mx, my, MODAL_W, MODAL_H, 0xFFFF9922);
         gui.renderOutline(mx + 2, my + 2, MODAL_W - 4, MODAL_H - 4, 0xFF5A3B1A);
@@ -312,12 +428,9 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
             }
         }
 
-        // Moves left + Cooling Timer Bar cleanly above the Quench button
         int movesY = gy + stride * 3 + 4;
-        int moves = menu.latticeMovesLeft();
-        gui.drawCenteredString(font, "Moves Remaining: " + moves, mx + MODAL_W / 2, movesY, 0xFF88DDFF);
+        gui.drawCenteredString(font, "Moves Remaining: " + menu.latticeMovesLeft(), mx + MODAL_W / 2, movesY, 0xFF88DDFF);
 
-        // Cooling Timer Bar
         int barX = mx + 18;
         int barY = movesY + 12;
         int barW = MODAL_W - 36;
@@ -329,9 +442,42 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
         int barColor = ratio > 0.35f ? 0xFFFFAA22 : 0xFFFF3333;
         gui.fill(barX + 1, barY + 1, barX + 1 + fillW, barY + barH - 1, barColor);
 
-        // Render modal Quench button below the cooling bar
         if (modalQuenchBtn != null && modalQuenchBtn.visible) {
             modalQuenchBtn.render(gui, mouseX, mouseY, partialTick);
+        }
+
+        gui.pose().popPose();
+    }
+
+    private void renderMasterpieceNamingModal(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
+        gui.pose().pushPose();
+        gui.pose().translate(0, 0, 300.0f);
+
+        gui.fill(0, 0, width, height, 0xCC0D0E12);
+
+        int mx = (width - NAME_MODAL_W) / 2;
+        int my = (height - NAME_MODAL_H) / 2;
+
+        ItemGradeData grade = outputStack().get(ModDataComponents.ITEM_GRADE.get());
+        boolean isMythic = grade != null && grade.tier() == GradeTier.MYTHIC;
+        int borderColor = isMythic ? 0xFFFF3355 : 0xFFFF9922;
+        String heading = isMythic ? "★ MYTHIC EGO AWAKENED ★" : "★ LEGENDARY MASTERPIECE ★";
+
+        gui.fill(mx, my, mx + NAME_MODAL_W, my + NAME_MODAL_H, 0xFF1A161C);
+        gui.renderOutline(mx, my, NAME_MODAL_W, NAME_MODAL_H, borderColor);
+        gui.renderOutline(mx + 2, my + 2, NAME_MODAL_W - 4, NAME_MODAL_H - 4, 0xFF5A3B2A);
+
+        gui.drawCenteredString(font, heading, mx + NAME_MODAL_W / 2, my + 12, borderColor);
+        gui.drawCenteredString(font, "Inscribe a name for your creation:", mx + NAME_MODAL_W / 2, my + 26, 0xFFD0D6E0);
+
+        if (masterpieceNameBox != null && masterpieceNameBox.visible) {
+            masterpieceNameBox.render(gui, mouseX, mouseY, partialTick);
+        }
+        if (inscribeBtn != null && inscribeBtn.visible) {
+            inscribeBtn.render(gui, mouseX, mouseY, partialTick);
+        }
+        if (skipNameBtn != null && skipNameBtn.visible) {
+            skipNameBtn.render(gui, mouseX, mouseY, partialTick);
         }
 
         gui.pose().popPose();
@@ -356,9 +502,13 @@ public class ForgingAnvilScreen extends AbstractContainerScreen<ForgingAnvilMenu
     @Override
     public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
         if (menu.isLatticeActive()) {
-            // Render only the world blur + dedicated Over-Forge modal (prevents inventory stack counts from bleeding through)
             renderBackground(gui, mouseX, mouseY, partialTick);
             renderOverForgeModal(gui, mouseX, mouseY, partialTick);
+            return;
+        }
+        if (namingModalActive) {
+            renderBackground(gui, mouseX, mouseY, partialTick);
+            renderMasterpieceNamingModal(gui, mouseX, mouseY, partialTick);
             return;
         }
         super.render(gui, mouseX, mouseY, partialTick);

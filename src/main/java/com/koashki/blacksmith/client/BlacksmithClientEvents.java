@@ -9,6 +9,7 @@ import com.koashki.blacksmith.client.screen.SmithsLedgerScreen;
 import com.koashki.blacksmith.client.screen.SynthesisChamberScreen;
 import com.koashki.blacksmith.component.ComposedAbilitiesData;
 import com.koashki.blacksmith.component.DiscoveredBlueprintsData;
+import com.koashki.blacksmith.component.EgoData;
 import com.koashki.blacksmith.component.ForgedCompositionData;
 import com.koashki.blacksmith.component.ItemGradeData;
 import com.koashki.blacksmith.component.SynthesisStarData;
@@ -103,6 +104,15 @@ public final class BlacksmithClientEvents {
                 event.getToolTip().add(Component.literal("Ascension: ").withStyle(ChatFormatting.GRAY)
                         .append(Component.literal(filled).withStyle(ChatFormatting.GOLD))
                         .append(Component.literal(empty).withStyle(ChatFormatting.DARK_GRAY)));
+            }
+
+            EgoData ego = stack.get(ModDataComponents.EGO_DATA.get());
+            if (ego != null) {
+                int egoBonus = Math.round(ego.egoStatBonus() * 100.0f);
+                event.getToolTip().add(Component.literal("✦ Living Ego: Lv." + ego.egoLevel() + " (" + ego.temperament().displayName() + ")")
+                        .withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
+                event.getToolTip().add(Component.literal("  Kills: " + ego.kills() + " (+" + egoBonus + "% Ego Power)")
+                        .withStyle(ChatFormatting.GOLD));
             }
 
             ComposedAbilitiesData abilities = stack.get(ModDataComponents.COMPOSED_ABILITIES.get());

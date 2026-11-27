@@ -415,10 +415,31 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
         if (output.isEmpty()) {
             return;
         }
+        String trimmed = customName == null ? "" : customName.trim();
+        if (trimmed.isEmpty()) {
+            return;
+        }
+        if (trimmed.length() > 32) {
+            trimmed = trimmed.substring(0, 32);
+        }
         ItemGradeData grade = output.get(ModDataComponents.ITEM_GRADE.get());
         if (grade != null && grade.tier().isMasterpiece()) {
-            output.set(ModDataComponents.ITEM_GRADE.get(), grade.withCustomName(customName.trim()));
+            output.set(ModDataComponents.ITEM_GRADE.get(), grade.withCustomName(trimmed));
+
+            var ledger = player.getData(com.koashki.blacksmith.core.ModAttachments.DISCOVERED_BLUEPRINTS);
+            String entry = trimmed + " (" + grade.tier().displayName().getString() + " " + selectedArchetype.displayName() + ")";
+            player.setData(com.koashki.blacksmith.core.ModAttachments.DISCOVERED_BLUEPRINTS, ledger.withMasterpiece(entry));
+            com.koashki.blacksmith.network.ModNetworking.syncLedger(player);
+
+            if (level instanceof ServerLevel serverLevel) {
+                serverLevel.playSound(null, worldPosition, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.8f, 1.4f);
+            }
+            player.displayClientMessage(Component.literal("Inscribed Masterpiece: " + trimmed)
+                    .withColor(grade.tier().colorRgb()), true);
             setChanged();
+            if (level != null && !level.isClientSide) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            }
         }
     }
 
@@ -492,6 +513,11 @@ public class ForgingAnvilBlockEntity extends BlockEntity implements MenuProvider
         result.set(ModDataComponents.FORGED_COMPOSITION.get(), finalComp);
         result.set(ModDataComponents.COMPOSED_ABILITIES.get(), abilities);
         result.set(ModDataComponents.SYNTHESIS_STAR.get(), SynthesisStarData.EMPTY);
+
+        // Awaken an Overgeared-style living Ego on Mythic creations
+        if (gradeData.tier() == com.koashki.blacksmith.component.GradeTier.MYTHIC) {
+            result.set(ModDataComponents.EGO_DATA.get(), com.koashki.blacksmith.component.EgoData.awaken(player.getRandom()));
+        }
 
         // Record discovered materials and emergent reactions in the player's Smith's Ledger
         recordDiscoveries(player, finalComp, abilities);
